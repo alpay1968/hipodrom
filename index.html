@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>At Yarışı</title>
+
+  <style>
+    /* CSS (STİL VE YERLEŞİM) */
+    body {
+      background-color: lightgray;
+    }
+
+    #saha {
+      background-color: darkgreen;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 10px;
+      position: relative;
+    }
+
+    #at1,
+    #at2,
+    #at3 {
+      position: relative;
+    }
+
+    #bitis {
+      position: absolute;
+      top: 20px;
+      bottom: 20px;
+      right: 30px;
+      border-left: 10px dashed white;
+    }
+
+    #sonuc {
+      font-size: 1.5em;
+      text-align: center;
+      padding: 10px;
+      background-color: white;
+    }
+
+    #kontroller {
+      text-align: center;
+      padding: 10px;
+    }
+    /**************************************/
+    #tahminler {
+  position: absolute;
+  bottom: 90px; /* Alt kenardan 20 piksel uzaklıkta */
+  left: 480px; /* Sol kenardan 20 piksel uzaklıkta */
+  width: 600px; /* Genişliği 300 piksel */
+  display: flex;
+  flex-direction: column; /* Dikey olarak hizalanmış kutular */
+  gap: 10px; /* Kutu elemanları arasında 10 piksel boşluk */
+}
+
+
+.kutu {
+  background-color: lightblue;
+  border: 2px solid blue;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+  </style>
+
+</head>
+
+<body>
+  <!-- HTML YAPISININ (SAHA, ATLAR, BİTİŞ ÇİZGİSİ VE SONUÇ) OLUŞTURULMASI -->
+  <div id="saha">
+    <img id="at1" src="at1.gif" width="160" height="100" alt="1 NUMARA">
+    <img id="at2" src="at2.gif" width="160" height="100" alt="2 NUMARA">
+    <img id="at3" src="at3.gif" width="160" height="100" alt="3 NUMARA">
+    <div id="bitis"></div>
+  </div>
+  <div id="sonuc">ATLAR YARIŞA HAZIR</div>
+  <div id="kontroller">
+    <button id="dugme">BAŞLAT</button>
+  </div>
+  <div id="tahminler">
+    <div class="kutu" id="kutu1" onclick="tahminYap('AT 1')">1 NUMARALI AT</div>
+    <div class="kutu" id="kutu2" onclick="tahminYap('AT 2')">2 NUMARALI AT</div>
+    <div class="kutu" id="kutu3" onclick="tahminYap('AT 3')">3 NUMARALI AT</div>
+  </div>
+
+
+  <script>
+    // DOM ELEMENTLERİN DEĞİŞKENLERE ATANMASI VE İLK DEĞERLER
+    const sonuc = document.getElementById("sonuc");
+    const dugme = document.getElementById("dugme");
+    const bitis = document.getElementById("bitis");
+    const at1 = document.getElementById("at1");
+    const at2 = document.getElementById("at2");
+    const at3 = document.getElementById("at3");
+    let x1 = 0, x2 = 0, x3 = 0;
+    let timerId = null;
+  
+    /* TAHMİNNNNNN*/
+    let secilenTahmin = null;
+    function tahminYap(at) {
+      secilenTahmin = at;  // Tahmini kaydet
+  sonuc.textContent = at + " SEÇİLDİ. YARIŞI KAZANIP KAZANMADIĞINI GÖRMEK İÇİN YARIŞI BAŞLATIN.";  /* TAHMİNNNNNN*/
+}
+
+
+    // RASTGELE SAYI ÜRETME METODU
+    function rast() {
+      return Math.floor(Math.random() * 50);
+    }
+
+    // ATLARIN İLERLEMESİ
+    function git() {
+      x1 += rast();
+      x2 += rast();
+      x3 += rast();
+      at1.style.left = x1 + "px";
+      at2.style.left = x2 + "px";
+      at3.style.left = x3 + "px";
+
+      let onde = ondeki();
+      sonuc.textContent = onde.alt + " YARIŞI ÖNDE GÖTÜRÜYOR.";
+
+      if (onde.offsetLeft + onde.width > bitis.offsetLeft) {
+        sonuc.textContent = onde.alt + " YARIŞI KAZANDI.";
+        bitir();
+      }
+    }
+
+    function bitir() {
+      clearInterval(timerId);
+      timerId = null;
+      dugme.textContent = "YENİ YARIŞ";
+      // Kazanan atı kontrol et
+  let kazanan = ondeki().alt; // Kazanan atın numarasını al (örneğin: "1 NUMARA")
+
+// Tahmini kontrol et ve sonucu göster
+if (secilenTahmin === kazanan) {
+  alert("Tebrikler, doğru tahmin ettiniz! Kazanan: " + kazanan);
+} else {
+  alert("Maalesef, yanlış tahmin ettiniz. Kazanan: " + kazanan);
+}
+    }
+
+
+    // ÖNDEKİ ATIN BELİRLENMESİ
+    function ondeki() {
+      let ondekiAt = at1;
+
+      if (at2.offsetLeft > ondekiAt.offsetLeft)
+        ondekiAt = at2;
+
+      if (at3.offsetLeft > ondekiAt.offsetLeft)
+        ondekiAt = at3;
+
+      return ondekiAt;
+    }
+
+    // YARIŞIN KONTROLÜ (BAŞLAMASI, DURDURULMASI VE YENİDEN BAŞLATILMASI)
+    dugme.onclick = function() {
+      if (dugme.textContent == "YENİ YARIŞ") {
+        x1 = x2 = x3 = 0;
+        at1.style.left = at2.style.left = at3.style.left = "0px";
+        dugme.textContent = "BAŞLAT";
+        sonuc.textContent = "ATLAR YARIŞA HAZIR";
+      }
+      else if (timerId == null) {
+        timerId = setInterval(git, 100);
+        dugme.textContent = "DURDUR";
+      }
+      else if (dugme.textContent == "DURDUR") {
+        clearInterval(timerId);
+        timerId = null;
+        dugme.textContent = "DEVAM ET";
+      } 
+    };
+
+  </script>
+</body>
+
+</html>
